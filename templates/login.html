@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Face Recognition System{% endblock %}
+
+{% block content %}
+
+<div class="container" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div>
+        <h3 style="margin-bottom: 1.5rem; text-align: center; color: #667eea;">Capture Your Face</h3>
+
+    <div style="padding: 1.5rem; background: rgba(102,126,234,0.05); border-radius: 15px; border: 2px dashed rgba(102,126,234,0.3); text-align: center;">
+
+        <div id="cameraContainer" style="background: #000; border-radius: 10px; overflow: hidden; margin-bottom: 1rem; display: flex; justify-content: center; align-items: center; position: relative;">
+
+            <video id="video" style="width: 100%; height: 350px;" autoplay playsinline></video>
+
+            <canvas id="canvas" style="display: none;"></canvas>
+
+            <!-- Countdown overlay -->
+            <div id="countdown" style="position:absolute; font-size:70px; color:white; font-weight:bold;"></div>
+
+        </div>
+
+        <p id="status" style="margin-top: 10px; text-align: center; color: var(--text-light);">
+            Initializing camera...
+        </p>
+
+        <input type="hidden" name="face_image" id="faceImage">
+
+        <div id="success" style="display: none; margin-top: 10px; background: #c6f6d5; padding: 8px; border-radius: 6px; color: #22543d;">
+            ✓ Photo captured
+        </div>
+
+    </div>
+</div>
+```
+
+</div>
+
+<script>
+
+let video = document.getElementById("video");
+let canvas = document.getElementById("canvas");
+let status = document.getElementById("status");
+let success = document.getElementById("success");
+let faceImage = document.getElementById("faceImage");
+let countdown = document.getElementById("countdown");
+
+let stream = null;
+
+async function startCamera() {
+    try {
+
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: 640,
+                height: 480
+            }
+        });
+
+        video.srcObject = stream;
+
+        status.innerText = "Camera started";
+
+        startCountdown();
+
+    } catch (e) {
+
+        status.innerText = "Camera permission denied or not available.";
+
+    }
+}
+
+function startCountdown() {
+
+    let count = 3;
+
+    countdown.innerText = count;
+    status.innerText = "Capturing photo...";
+
+    let interval = setInterval(() => {
+
+        count--;
+
+        if (count > 0) {
+
+            countdown.innerText = count;
+
+        } else {
+
+            clearInterval(interval);
+            countdown.innerText = "";
+            capturePhoto();
+
+        }
+
+    }, 1000);
+}
+
+function capturePhoto() {
+
+    if (!stream) return;
+
+    let ctx = canvas.getContext("2d");
+
+    // Keep original camera resolution (no resizing)
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.drawImage(video, 0, 0);
+
+    let img = canvas.toDataURL("image/jpeg", 0.9);
+
+    faceImage.value = img;
+
+    canvas.style.display = "block";
+    video.style.display = "none";
+
+    success.style.display = "block";
+    status.innerText = "Photo captured successfully!";
+
+}
+
+window.onload = startCamera;
+
+</script>
+
+<style>
+
+@media (max-width: 1200px) {
+    div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+</style>
+
+{% endblock %}

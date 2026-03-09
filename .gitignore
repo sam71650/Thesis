@@ -1,0 +1,16 @@
+# Virtual environment
+facevenv/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Django database
+db.sqlite3
+
+# Environment variables
+.env
+
+# Logs
+*.log
