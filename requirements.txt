@@ -22,3 +22,4 @@ torchvision
 typing_extensions
 tzdata
 urllib3
+python-dotenv
