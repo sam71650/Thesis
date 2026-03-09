@@ -1,4 +1,4 @@
-name: Django CI
+name: Django CI with Docker
 
 on:
   push:
@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:15
@@ -25,13 +24,13 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-
     env:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       POSTGRES_DB: postgres
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       DEBUG: False
+      DATABASE_URL: postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/postgres
 
     steps:
       - name: Checkout code
@@ -61,3 +60,7 @@ jobs:
 
       - name: Run tests
         run: python manage.py test
+
+      - name: Build Docker image
+        run: |
+          docker build -t face_recognition_master_thesis:latest .
