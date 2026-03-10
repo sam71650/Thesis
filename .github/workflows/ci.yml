@@ -63,4 +63,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t face_recognition_master_thesis:latest .
+          docker build -t face_recognition_master_thesis:${{ github.ref_name }} .
+          docker tag face_recognition_master_thesis:${{ github.ref_name }} ghcr.io/sam71650/face_recognition_master_thesis:${{ github.ref_name }}
+
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/sam71650/face_recognition_master_thesis:${{ github.ref_name }}
