@@ -1,10 +1,13 @@
 # Virtual environment
 facevenv/
+venv/
+env/
 
 # Python cache
 __pycache__/
 **/__pycache__/
 *.pyc
+*.pyo
 
 # Django database
 db.sqlite3
@@ -14,3 +17,28 @@ db.sqlite3
 
 # Logs
 *.log
+
+# Git
+.git
+.gitignore
+
+# Media / uploads
+media/
+
+# Static build files
+staticfiles/
+
+# Node
+node_modules/
+
+# ML / Face recognition models
+models/
+datasets/
+data/
+*.h5
+*.pt
+*.pth
+*.pkl
+
+# OS files
+.DS_Store
