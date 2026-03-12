@@ -24,3 +24,4 @@ tzdata
 urllib3
 python-dotenv
 deepface
+tf-keras
