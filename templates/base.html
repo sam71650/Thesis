@@ -1,391 +1,204 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Face Recognition System{% endblock %}</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Thesis Portal{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --light-gradient: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-            --dark-bg: #0f0c29;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --text-primary: #2d3748;
-            --text-light: #718096;
-            --border-color: rgba(102, 126, 234, 0.1);
-        }
+    :root {
+      --pink-light: #fdf2f8;
+      --pink-mid:   #fce7f3;
+      --pink:       #f472b6;
+      --pink-dark:  #ec4899;
+      --purple:     #a855f7;
+      --deep:       #4a1942;
+      --white:      #ffffff;
+      --muted:      #7c5a7e;
+      --surface:    rgba(255,255,255,0.72);
+      --border:     rgba(168,85,247,0.18);
+      --grad-main:  linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 45%, #fce7f3 100%);
+      --grad-accent: linear-gradient(135deg, #f472b6, #a855f7, #7c3aed);
+    }
 
-        html, body {
-            height: 100%;
-            background: var(--primary-gradient);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text-primary);
-        }
+    html { scroll-behavior: smooth; }
 
-        body {
-            background-attachment: fixed;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--grad-main);
+      min-height: 100vh;
+      color: var(--deep);
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
-        /* Navigation Styling */
-        nav {
-            background: rgba(15, 12, 41, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem 0;
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 800px 600px at 80% -10%, rgba(244,114,182,.22) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 500px at -10% 80%, rgba(168,85,247,.14) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-        nav ul {
-            list-style: none;
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-            padding: 0 2rem;
-        }
+    /* ── NAVBAR ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 3rem;
+      height: 68px;
+      background: rgba(255,255,255,0.62);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 24px rgba(168,85,247,.07);
+    }
 
-        nav a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            position: relative;
-        }
+    .nav-brand {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -.02em;
+      background: var(--grad-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
 
-        nav a:hover {
-            background: var(--primary-gradient);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
+    .nav-links {
+      display: flex;
+      gap: .25rem;
+      list-style: none;
+      align-items: center;
+    }
 
-        /* Header Styling */
-        header {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 3rem 2rem;
-            text-align: center;
-            color: white;
-            margin-bottom: 2rem;
-        }
+    .nav-links a {
+      font-size: .875rem;
+      font-weight: 500;
+      color: var(--purple);
+      text-decoration: none;
+      padding: .45rem .9rem;
+      border-radius: 8px;
+      transition: background .2s, color .2s;
+    }
+    .nav-links a:hover { background: rgba(244,114,182,.13); color: var(--deep); }
 
-        header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #ffffff 0%, #e0c3fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+    .btn-login {
+      background: transparent;
+      border: 1.5px solid var(--pink-dark);
+      color: var(--pink-dark) !important;
+      border-radius: 10px !important;
+    }
+    .btn-login:hover { background: rgba(236,72,153,.08) !important; }
 
-        header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            color: #e0c3fc;
-        }
+    .btn-register {
+      background: var(--grad-accent) !important;
+      color: #fff !important;
+      border-radius: 10px !important;
+      box-shadow: 0 4px 14px rgba(168,85,247,.35);
+    }
+    .btn-register:hover { filter: brightness(1.08); }
 
-        /* Main Content */
-        main {
-            flex: 1;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
+    /* ── CONTENT ── */
+    main {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 5rem 2rem 4rem;
+    }
 
-        /* Container Styling */
-        .container {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
-            backdrop-filter: blur(4px);
-            border: 1px solid var(--border-color);
-            margin-bottom: 2rem;
-        }
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border);
+      padding: 2rem 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
 
-        .container h2 {
-            color: var(--text-primary);
-            margin-bottom: 1.5rem;
-            font-size: 1.8rem;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+    .footer-left { display: flex; align-items: center; gap: .75rem; }
+    .footer-logo { height: 36px; width: auto; object-fit: contain; }
 
-        .container p {
-            color: var(--text-light);
-            line-height: 1.8;
-            margin-bottom: 1rem;
-        }
+    .footer-brand {
+      font-family: 'Syne', sans-serif;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--deep);
+    }
+    .footer-brand span {
+      display: block;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: .75rem;
+      color: var(--muted);
+    }
+    .footer-right { font-size: .8rem; color: var(--muted); }
 
-        /* Button Styling */
-        .btn {
-            display: inline-block;
-            padding: 0.8rem 1.8rem;
-            background: var(--primary-gradient);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            margin-top: 1rem;
-        }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
-        }
+    @media (max-width: 640px) {
+      nav { padding: 0 1.25rem; }
+      main { padding: 3rem 1.25rem 3rem; }
+      footer { padding: 1.5rem 1.25rem; }
+    }
 
-        .btn:active {
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: var(--secondary-gradient);
-            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
-        }
-
-        .btn-secondary:hover {
-            box-shadow: 0 6px 25px rgba(245, 87, 108, 0.5);
-        }
-
-        /* Footer Styling */
-        footer {
-            background: rgba(15, 12, 41, 0.95);
-            backdrop-filter: blur(10px);
-            color: #e0c3fc;
-            text-align: center;
-            padding: 2rem;
-            margin-top: auto;
-            border-top: 1px solid var(--border-color);
-        }
-
-        footer p {
-            margin: 0.5rem 0;
-        }
-
-        footer a {
-            color: #8ec5fc;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        footer a:hover {
-            color: #e0c3fc;
-            text-decoration: underline;
-        }
-
-        /* Grid Layout */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .grid-item {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(31, 38, 135, 0.15);
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-
-        .grid-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
-        }
-
-        .grid-item h3 {
-            color: var(--text-primary);
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
-
-        .grid-item p {
-            color: var(--text-light);
-            font-size: 0.95rem;
-        }
-
-        /* Messages and Alerts */
-        .alert {
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            border-left: 4px solid;
-        }
-
-        .alert-success {
-            background: #c6f6d5;
-            color: #22543d;
-            border-left-color: #48bb78;
-        }
-
-        .alert-error {
-            background: #fed7d7;
-            color: #742a2a;
-            border-left-color: #f56565;
-        }
-
-        .alert-warning {
-            background: #feebc8;
-            color: #7c2d12;
-            border-left-color: #ed8936;
-        }
-
-        .alert-info {
-            background: #bee3f8;
-            color: #2c5282;
-            border-left-color: #4299e1;
-        }
-
-        /* Form Styling */
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            color: var(--text-primary);
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        input, textarea, select {
-            padding: 0.8rem;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1rem;
-            font-family: inherit;
-            transition: all 0.3s ease;
-        }
-
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            background: rgba(102, 126, 234, 0.02);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 2rem;
-            }
-
-            nav ul {
-                gap: 1rem;
-                padding: 0 1rem;
-            }
-
-            main {
-                padding: 1rem;
-            }
-
-            .container {
-                padding: 1.5rem;
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .container, .grid-item, nav, header {
-            animation: fadeIn 0.5s ease-out;
-        }
-    </style>
+    {% block extra_css %}{% endblock %}
+  </style>
 </head>
 <body>
-    <!-- Navigation -->
-    {% if user.is_authenticated %}
-    <nav>
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/upload">Upload Image</a></li>
-            <li><a href="/gallery">Gallery</a></li>
-            <li><a href="/profile">Profile</a></li>
-            <li><a href="/logout">Logout</a></li>
-        </ul>
-    </nav>
-    {% else %}
-    <nav>
-        <ul>
-            <li><a href="{% url 'users:main' %}">Home</a></li>
-            <li><a href="{% url 'users:login' %}" >Login</a></li>
-            <li><a href="{% url 'users:register' %}" >Register</a></li>
-        </ul>
-    </nav>
-    {% endif %}
 
-    <!-- Header -->
-    <!--<header>
-        <h1>🔐 Face Recognition System</h1>
-        <p>Advanced facial recognition and analysis</p>
-    </header>-->
+  <!-- NAVBAR -->
+  <nav>
+    <a href="{% url 'home' %}" class="nav-brand">Thesis Portal</a>
+    <ul class="nav-links">
+      <li><a href="#">About</a></li>
+      <li><a href="#">Research</a></li>
+      <li><a href="{% url 'users:login' %}" class="btn-login">Log in</a></li>
+      <li><a href="{% url 'users:register' %}" class="btn-register">Register</a></li>
+    </ul>
+  </nav>
 
-    <!-- Main Content -->
-    <main>
-        <!-- Messages -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+  <!-- PAGE CONTENT -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
 
-        <!-- Block Content -->
-        {% block content %}
-        <div class="container">
-            <h2>Welcome</h2>
-            <p>Master Thesis Topic :Description End-to-End Machine Learning for Adversarial Robustness in Face Recognition Systems with Liveness Detection  </p>
-        </div>
-        {% endblock %}
-    </main>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">
+      <img src="{% static 'images/logo.png' %}" alt="Logo" class="footer-logo" />
+      <div class="footer-brand">
+        Thesis Portal
+        <span>Master Thesis · Spring 2026</span>
+      </div>
+    </div>
+    <div class="footer-right">
+      © 2026 Master Thesis Portal. All rights reserved.
+    </div>
+  </footer>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2026 Face Recognition System. All rights reserved.</p>
-        <p>Powered by Sam / Nafisa | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
-    </footer>
 </body>
 </html>
