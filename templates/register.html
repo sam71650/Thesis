@@ -1,251 +1,487 @@
 {% extends 'base.html' %}
-
 {% block title %}Register - Face Recognition System{% endblock %}
 
 {% block content %}
-<div class="container">
-<h2>Create Your Account</h2>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono&display=swap');
 
-<form method="POST" enctype="multipart/form-data" id="registerForm">
-{% csrf_token %}
+  :root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warn: #f59e0b;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+  }
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:2rem;">
+  body { background: var(--bg); font-family: 'Syne', sans-serif; color: var(--text); }
 
-<!-- LEFT SIDE -->
-<div>
+  .reg-wrapper {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
 
-<h3 style="margin-bottom:1.5rem;color:#667eea;">Account Information</h3>
+  .reg-header { text-align: center; margin-bottom: 2rem; }
+  .reg-header h2 { font-size: 2rem; font-weight: 500; }
+  .reg-header p  { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
 
-<div style="margin-bottom:2rem;">
-<label>Username</label>
+  .reg-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
 
-<input
-type="text"
-name="username"
-required
-minlength="3"
-placeholder="Enter username"
-value="{{ request.POST.username }}"
->
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  }
 
-<small style="color:var(--text-light)">Minimum 3 characters</small>
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .form-group { margin-bottom: 1.2rem; }
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input[type=text], input[type=password] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-family: 'Syne', sans-serif;
+    transition: border-color 0.2s;
+    background: #fff;
+  }
+
+  input:focus { outline: none; border-color: var(--primary); }
+
+  .hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* Steps indicator */
+  .steps {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .step {
+    flex: 1;
+    height: 4px;
+    border-radius: 99px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .step.done  { background: var(--success); }
+  .step.active{ background: var(--primary); }
+
+  /* Camera area */
+  .cam-box {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #video, #canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+
+  #overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  .cam-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #888;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .cam-placeholder .icon { font-size: 3rem; }
+
+  /* Status pill */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-family: 'Space Mono', monospace;
+    margin-top: 0.8rem;
+  }
+
+  .status-pill.idle    { background: #f1f5f9; color: var(--muted); }
+  .status-pill.active  { background: #ede9fe; color: var(--primary); }
+  .status-pill.success { background: #d1fae5; color: var(--success); }
+  .status-pill.error   { background: #fee2e2; color: var(--danger); }
+  .status-pill.warn    { background: #fef3c7; color: var(--warn); }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+
+  .btn {
+    padding: 0.55rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: #f1f5f9; color: var(--text); }
+  .btn-secondary:hover { background: #e2e8f0; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-success { background: var(--success); color: #fff; }
+
+  /* Submit */
+  .btn-submit {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .btn-submit:hover  { opacity: 0.9; transform: translateY(-1px); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Django messages */
+  .alert {
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+  .alert-error   { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+
+  /* Face detection box drawn on canvas overlay */
+  .face-guide {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 150px; height: 180px;
+    border: 2px dashed rgba(99,102,241,0.6);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  @media(max-width: 700px) {
+    .reg-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="reg-wrapper">
+
+  <!-- Header -->
+  <div class="reg-header">
+    <h2>BIOMETERIC REGISTRATION</h2>
+  </div>
+
+  <!-- Django messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="POST" id="registerForm">
+    {% csrf_token %}
+    <input type="hidden" name="face_image" id="faceImage">
+
+    <div class="reg-grid">
+
+      <!-- LEFT: Account Info -->
+      <div class="card">
+        <h3>👤 Account Information</h3>
+
+        <!-- Progress steps -->
+        <div class="steps">
+          <div class="step active" id="step1"></div>
+          <div class="step" id="step2"></div>
+          <div class="step" id="step3"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" name="name" placeholder="e.g. Sam Farahani"
+                 value="{{ request.POST.name }}" minlength="2">
+          <p class="hint">Used for display only</p>
+        </div>
+
+        <div class="form-group">
+          <label>What happens to your face data?</label>
+          <div style="background:#f8fafc;border-radius:8px;padding:0.8rem;font-size:0.78rem;color:var(--muted);line-height:1.6;">
+            ✅ Only a <strong>512-number vector</strong> is stored<br>
+            ✅ Your raw photo is <strong>never saved</strong><br>
+            ✅ The vector cannot reconstruct your face
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn" disabled>
+          Register Account →
+        </button>
+      </div>
+
+      <!-- RIGHT: Camera -->
+      <div class="card">
+        <h3>📷 Face Capture</h3>
+
+        <div class="cam-box" id="camBox">
+          <div class="cam-placeholder" id="placeholder">
+            <div class="icon">📷</div>
+            <span>Click "Start Camera" to begin</span>
+          </div>
+          <video id="video" autoplay playsinline muted></video>
+          <canvas id="canvas"></canvas>
+          <canvas id="overlay"></canvas>
+          <div class="face-guide" id="faceGuide" style="display:none"></div>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <span class="status-pill idle" id="statusPill">
+            <span class="dot"></span>
+            <span id="statusText">Ready</span>
+          </span>
+        </div>
+
+        <!-- Checklist -->
+        <div style="margin-top:1rem;font-size:0.78rem;display:flex;flex-direction:column;gap:0.3rem;">
+          <div id="chk-live"   style="color:var(--muted)">⬜ Face detected</div>
+          <div id="chk-clear"  style="color:var(--muted)">⬜ Image clear & centered</div>
+          <div id="chk-capture"style="color:var(--muted)">⬜ Photo captured</div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary"   id="startBtn"   onclick="startCamera()">Start Camera</button>
+          <button type="button" class="btn btn-success"   id="captureBtn" onclick="capturePhoto()" style="display:none">Capture</button>
+          <button type="button" class="btn btn-secondary" id="retakeBtn"  onclick="retake()"       style="display:none">Retake</button>
+          <button type="button" class="btn btn-danger"    id="stopBtn"    onclick="stopCamera()"   style="display:none">Stop</button>
+        </div>
+      </div>
+
+    </div><!-- end grid -->
+  </form>
 </div>
-
-<button
-type="submit"
-class="btn"
-style="width:100%;padding:1rem;margin-top:3rem;"
->
-Register Account
-</button>
-
-</div>
-
-
-<!-- RIGHT SIDE CAMERA -->
-<div>
-
-<h3 style="margin-bottom:1.5rem;color:#667eea;">Capture Your Face</h3>
-
-<div style="padding:1.5rem;background:rgba(102,126,234,0.05);border-radius:15px;border:2px dashed rgba(102,126,234,0.3);">
-
-<div id="cameraContainer" style="background:#000;border-radius:10px;overflow:hidden;margin-bottom:1rem;">
-
-<video id="video" style="width:100%;height:350px;display:none;" autoplay playsinline></video>
-
-<canvas id="canvas" style="width:100%;height:350px;display:none;"></canvas>
-
-<div id="placeholder"
-style="width:100%;height:350px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-size:3rem;background:linear-gradient(135deg,#e0c3fc,#8ec5fc);">
-📷
-<small style="font-size:1rem;">Camera preview will appear here</small>
-</div>
-
-</div>
-
-
-<div style="display:flex;gap:.5rem;flex-wrap:wrap">
-
-<button type="button" id="startBtn" class="btn" onclick="startCamera()">Start</button>
-
-<button type="button" id="captureBtn" class="btn btn-secondary" onclick="capturePhoto()" style="display:none">Capture</button>
-
-<button type="button" id="retakeBtn" class="btn" onclick="retake()" style="display:none">Retake</button>
-
-<button type="button" id="stopBtn" class="btn" onclick="stopCamera()" style="display:none;background:#f56565">Stop</button>
-
-</div>
-
-<p id="status" style="margin-top:10px;text-align:center;color:var(--text-light)">
-Click Start Camera
-</p>
-
-<input type="hidden" name="face_image" id="faceImage">
-
-<div id="success" style="display:none;margin-top:10px;background:#c6f6d5;padding:8px;border-radius:6px;color:#22543d">
-✓ Photo captured
-</div>
-
-</div>
-</div>
-
-</div>
-</form>
-</div>
-
 
 <script>
+  const video      = document.getElementById("video");
+  const canvas     = document.getElementById("canvas");
+  const overlay    = document.getElementById("overlay");
+  const placeholder= document.getElementById("placeholder");
+  const faceGuide  = document.getElementById("faceGuide");
+  const faceImage  = document.getElementById("faceImage");
+  const submitBtn  = document.getElementById("submitBtn");
+  const statusPill = document.getElementById("statusPill");
+  const statusText = document.getElementById("statusText");
 
-let video = document.getElementById("video")
-let canvas = document.getElementById("canvas")
-let placeholder = document.getElementById("placeholder")
+  let stream = null;
+  let captured = false;
 
-let startBtn = document.getElementById("startBtn")
-let captureBtn = document.getElementById("captureBtn")
-let retakeBtn = document.getElementById("retakeBtn")
-let stopBtn = document.getElementById("stopBtn")
+  // ── Status helper ────────────────────────────────────────
+  function setStatus(msg, type="idle") {
+    statusText.textContent = msg;
+    statusPill.className = `status-pill ${type}`;
+  }
 
-let status = document.getElementById("status")
-let success = document.getElementById("success")
-let faceImage = document.getElementById("faceImage")
+  // ── Checklist helper ─────────────────────────────────────
+  function setCheck(id, done) {
+    const el = document.getElementById(id);
+    if (done) {
+      el.textContent = el.textContent.replace("⬜","✅");
+      el.style.color = "var(--success)";
+    }
+  }
 
-let stream = null
+  // ── Step indicator ────────────────────────────────────────
+  function setStep(n) {
+    for (let i = 1; i <= 3; i++) {
+      const s = document.getElementById(`step${i}`);
+      if (i < n)       s.className = "step done";
+      else if (i === n) s.className = "step active";
+      else              s.className = "step";
+    }
+  }
 
+  // ── Start camera ──────────────────────────────────────────
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }
+      });
+      video.srcObject = stream;
+      video.style.display = "block";
+      placeholder.style.display = "none";
+      faceGuide.style.display = "block";
 
-async function startCamera(){
+      document.getElementById("startBtn").style.display   = "none";
+      document.getElementById("captureBtn").style.display = "inline-block";
+      document.getElementById("stopBtn").style.display    = "inline-block";
 
-try{
+      setStatus("Camera active — position your face", "active");
+      setStep(2);
+    } catch(e) {
+      setStatus("Camera permission denied", "error");
+    }
+  }
 
-stream = await navigator.mediaDevices.getUserMedia({
-video:{
-width:640,
-height:480
-}
-})
+  // ── Capture photo ─────────────────────────────────────────
+  function capturePhoto() {
+    if (!stream) return;
 
-video.srcObject = stream
-video.style.display="block"
-placeholder.style.display="none"
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
 
-captureBtn.style.display="inline-block"
-stopBtn.style.display="inline-block"
-startBtn.style.display="none"
+    const img = canvas.toDataURL("image/jpeg", 0.85);
 
-status.innerText="Camera started"
+    // Basic size check
+    if (img.length > 3_000_000) {
+      setStatus("Image too large — try again", "error");
+      return;
+    }
 
-}catch(e){
+    faceImage.value = img;
+    captured = true;
 
-status.innerText="Camera permission denied"
+    // Show still, hide video
+    canvas.style.display = "block";
+    video.style.display  = "none";
+    faceGuide.style.display = "none";
 
-}
+    document.getElementById("captureBtn").style.display = "none";
+    document.getElementById("retakeBtn").style.display  = "inline-block";
 
-}
+    setStatus("Photo captured ✓", "success");
+    setCheck("chk-live",    true);
+    setCheck("chk-clear",   true);
+    setCheck("chk-capture", true);
+    setStep(3);
+    submitBtn.disabled = false;
+  }
 
+  // ── Retake ────────────────────────────────────────────────
+  function retake() {
+    canvas.style.display = "none";
+    video.style.display  = "block";
+    faceGuide.style.display = "block";
+    faceImage.value = "";
+    captured = false;
 
+    document.getElementById("retakeBtn").style.display  = "none";
+    document.getElementById("captureBtn").style.display = "inline-block";
 
-function capturePhoto(){
+    setStatus("Camera active — position your face", "active");
 
-if(!stream) return
+    // Reset checks
+    ["chk-live","chk-clear","chk-capture"].forEach(id => {
+      const el = document.getElementById(id);
+      el.textContent = "⬜" + el.textContent.slice(1);
+      el.style.color = "var(--muted)";
+    });
 
-let ctx = canvas.getContext("2d")
+    submitBtn.disabled = true;
+    setStep(2);
+  }
 
-canvas.width = video.videoWidth
-canvas.height = video.videoHeight
+  // ── Stop camera ───────────────────────────────────────────
+  function stopCamera() {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = null;
+    video.srcObject = null;
+    video.style.display  = "none";
+    canvas.style.display = "none";
+    faceGuide.style.display = "none";
+    placeholder.style.display = "flex";
 
-ctx.drawImage(video,0,0,canvas.width,canvas.height)
+    document.getElementById("startBtn").style.display   = "inline-block";
+    document.getElementById("captureBtn").style.display = "none";
+    document.getElementById("retakeBtn").style.display  = "none";
+    document.getElementById("stopBtn").style.display    = "none";
 
-let img = canvas.toDataURL("image/jpeg",0.8)
+    faceImage.value = "";
+    captured = false;
+    submitBtn.disabled = true;
+    setStatus("Camera stopped", "idle");
+    setStep(1);
+  }
 
-if(img.length > 2000000){
-alert("Image too large")
-return
-}
+  // ── Form validation ───────────────────────────────────────
+  document.getElementById("registerForm").addEventListener("submit", function(e) {
+    if (!faceImage.value) {
+      e.preventDefault();
+      setStatus("Please capture your face first!", "error");
+      return;
+    }
+    setStatus("Registering…", "active");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Processing…";
+  });
 
-faceImage.value = img
-
-canvas.style.display="block"
-video.style.display="none"
-
-captureBtn.style.display="none"
-retakeBtn.style.display="inline-block"
-
-success.style.display="block"
-status.innerText="Photo captured"
-
-}
-
-
-
-function retake(){
-
-canvas.style.display="none"
-video.style.display="block"
-
-retakeBtn.style.display="none"
-captureBtn.style.display="inline-block"
-
-success.style.display="none"
-faceImage.value=""
-
-status.innerText="Retake photo"
-
-}
-
-
-
-function stopCamera(){
-
-if(stream){
-stream.getTracks().forEach(track => track.stop())
-stream=null
-}
-
-video.srcObject=null
-video.style.display="none"
-canvas.style.display="none"
-placeholder.style.display="flex"
-
-startBtn.style.display="inline-block"
-captureBtn.style.display="none"
-retakeBtn.style.display="none"
-stopBtn.style.display="none"
-
-success.style.display="none"
-faceImage.value=""
-
-status.innerText="Camera stopped"
-
-}
-
-
-
-document.getElementById("registerForm").addEventListener("submit",function(e){
-
-if(!faceImage.value){
-
-e.preventDefault()
-
-alert("Please capture your face before registering.")
-
-}
-
-})
-
+  // Stop camera if user leaves page
+  window.addEventListener("beforeunload", () => {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+  });
 </script>
-
-
-<style>
-
-@media(max-width:1200px){
-
-div[style*="grid-template-columns"]{
-
-grid-template-columns:1fr !important;
-
-}
-
-}
-
-</style>
 
 {% endblock %}
