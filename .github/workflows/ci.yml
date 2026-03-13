@@ -6,9 +6,14 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:15
@@ -33,13 +38,13 @@ jobs:
       DATABASE_URL: postgres://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/postgres
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -49,6 +54,7 @@ jobs:
       - name: Wait for PostgreSQL
         run: |
           until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
             sleep 2
           done
 
@@ -66,12 +72,16 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/sam71650/face_recognition_master_thesis:${{ github.ref_name }} .
+          docker build \
+            -t ghcr.io/${{ github.repository_owner }}/face_recognition_master_thesis:latest \
+            -t ghcr.io/${{ github.repository_owner }}/face_recognition_master_thesis:${{ github.ref_name }} \
+            .
 
-      - name: Push Docker image
+      - name: Push Docker images
         run: |
-          docker push ghcr.io/sam71650/face_recognition_master_thesis:${{ github.ref_name }}
+          docker push ghcr.io/${{ github.repository_owner }}/face_recognition_master_thesis:latest
+          docker push ghcr.io/${{ github.repository_owner }}/face_recognition_master_thesis:${{ github.ref_name }}
