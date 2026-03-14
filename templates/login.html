@@ -1,0 +1,534 @@
+{% extends 'base.html' %}
+{% block title %}Login - Face Recognition System{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono&display=swap');
+
+  :root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warn: #f59e0b;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+  }
+
+  body { background: var(--bg); font-family: 'Syne', sans-serif; color: var(--text); }
+
+  .login-wrapper {
+    max-width: 520px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+  }
+
+  .login-header { text-align: center; margin-bottom: 2rem; }
+  .login-header h2 { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; }
+  .login-header p  { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Steps indicator */
+  .steps {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .step {
+    flex: 1;
+    height: 4px;
+    border-radius: 99px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .step.done   { background: var(--success); }
+  .step.active { background: var(--primary); }
+
+  /* Camera area */
+  .cam-box {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #video, #canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+
+  .cam-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #888;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .cam-placeholder .icon { font-size: 3.5rem; }
+
+  .face-guide {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 160px;
+    height: 190px;
+    border: 2px dashed rgba(99,102,241,0.6);
+    border-radius: 50%;
+    pointer-events: none;
+    display: none;
+  }
+
+  /* Status pill */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-family: 'Space Mono', monospace;
+    margin-top: 0.8rem;
+  }
+
+  .status-pill.idle    { background: #f1f5f9; color: var(--muted); }
+  .status-pill.active  { background: #ede9fe; color: var(--primary); }
+  .status-pill.success { background: #d1fae5; color: var(--success); }
+  .status-pill.error   { background: #fee2e2; color: var(--danger); }
+  .status-pill.warn    { background: #fef3c7; color: var(--warn); }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Checklist */
+  .checklist {
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+
+  .btn {
+    padding: 0.55rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary   { background: var(--primary); color: #fff; }
+  .btn-primary:hover  { background: var(--primary-dark); }
+  .btn-secondary { background: #f1f5f9; color: var(--text); }
+  .btn-secondary:hover{ background: #e2e8f0; }
+  .btn-danger    { background: var(--danger); color: #fff; }
+  .btn-success-sm{ background: var(--success); color: #fff; }
+
+  .btn-submit {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .btn-submit:hover    { opacity: 0.9; transform: translateY(-1px); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Django messages */
+  .alert {
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+  .alert-error   { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+
+  /* ── Success card ── */
+  .success-card {
+    display: none;
+    text-align: center;
+    padding: 2.5rem 2rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+  .success-card .avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--success));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    margin: 0 auto 1.2rem;
+    box-shadow: 0 0 0 6px #ede9fe;
+  }
+
+  .success-card .welcome {
+    font-size: 0.78rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  .success-card .name {
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.6rem;
+  }
+
+  .success-card .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #d1fae5;
+    color: var(--success);
+    border-radius: 999px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.78rem;
+    font-family: 'Space Mono', monospace;
+    font-weight: 600;
+    margin-bottom: 1.6rem;
+  }
+
+  .success-card .btn-continue {
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .success-card .btn-continue:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  .register-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .register-link a {
+    color: var(--primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .register-link a:hover { text-decoration: underline; }
+</style>
+
+<div class="login-wrapper">
+
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- ── Success state (shown after verified) ── -->
+  <div class="success-card" id="successCard">
+    <div class="avatar">👤</div>
+    <div class="welcome">Identity Verified</div>
+    <div class="name" id="verifiedName">—</div>
+    <div class="badge">✅ Face matched</div>
+    <br>
+    <button class="btn-continue" onclick="window.location.href='/'">Continue to Dashboard →</button>
+  </div>
+
+  <!-- ── Login form ── -->
+  <div id="loginSection">
+    <form method="POST" id="loginForm">
+      {% csrf_token %}
+      <input type="hidden" name="face_image" id="faceImage">
+
+      <div class="card">
+        <h3>📷 Face Verification</h3>
+
+        <!-- Progress steps -->
+        <div class="steps">
+          <div class="step active" id="step1"></div>
+          <div class="step" id="step2"></div>
+          <div class="step" id="step3"></div>
+        </div>
+
+        <!-- Camera -->
+        <div class="cam-box" id="camBox">
+          <div class="cam-placeholder" id="placeholder">
+            <div class="icon">🔍</div>
+            <span>Click "Start Camera" to verify</span>
+          </div>
+          <video id="video" autoplay playsinline muted></video>
+          <canvas id="canvas"></canvas>
+          <div class="face-guide" id="faceGuide"></div>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <span class="status-pill idle" id="statusPill">
+            <span class="dot"></span>
+            <span id="statusText">Ready</span>
+          </span>
+        </div>
+
+        <!-- Checklist -->
+        <div class="checklist">
+          <div id="chk-live"    style="color:var(--muted)">⬜ Camera active</div>
+          <div id="chk-face"    style="color:var(--muted)">⬜ Face positioned in frame</div>
+          <div id="chk-capture" style="color:var(--muted)">⬜ Photo captured</div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary"    id="startBtn"   onclick="startCamera()">Start Camera</button>
+          <button type="button" class="btn btn-success-sm" id="captureBtn" onclick="capturePhoto()" style="display:none">Capture</button>
+          <button type="button" class="btn btn-secondary"  id="retakeBtn"  onclick="retake()"       style="display:none">Retake</button>
+          <button type="button" class="btn btn-danger"     id="stopBtn"    onclick="stopCamera()"   style="display:none">Stop</button>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn" disabled>
+          Verify Identity →
+        </button>
+      </div>
+    </form>
+
+    <div class="register-link">
+      Don't have an account? <a href="{% url 'users:register' %}">Register here</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const video       = document.getElementById("video");
+  const canvas      = document.getElementById("canvas");
+  const placeholder = document.getElementById("placeholder");
+  const faceGuide   = document.getElementById("faceGuide");
+  const faceImage   = document.getElementById("faceImage");
+  const submitBtn   = document.getElementById("submitBtn");
+  const statusPill  = document.getElementById("statusPill");
+  const statusText  = document.getElementById("statusText");
+
+  let stream   = null;
+  let captured = false;
+
+  // ── Helpers ──────────────────────────────────────────────
+  function setStatus(msg, type = "idle") {
+    statusText.textContent = msg;
+    statusPill.className   = `status-pill ${type}`;
+  }
+
+  function setCheck(id, done) {
+    const el = document.getElementById(id);
+    if (done) {
+      el.textContent = "✅" + el.textContent.slice(1);
+      el.style.color = "var(--success)";
+    } else {
+      el.textContent = "⬜" + el.textContent.slice(1);
+      el.style.color = "var(--muted)";
+    }
+  }
+
+  function setStep(n) {
+    for (let i = 1; i <= 3; i++) {
+      const s = document.getElementById(`step${i}`);
+      if      (i < n)  s.className = "step done";
+      else if (i === n) s.className = "step active";
+      else              s.className = "step";
+    }
+  }
+
+  // ── Start camera ──────────────────────────────────────────
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }
+      });
+      video.srcObject = stream;
+      video.style.display = "block";
+      placeholder.style.display = "none";
+      faceGuide.style.display   = "block";
+
+      document.getElementById("startBtn").style.display   = "none";
+      document.getElementById("captureBtn").style.display = "inline-block";
+      document.getElementById("stopBtn").style.display    = "inline-block";
+
+      setStatus("Camera active — centre your face", "active");
+      setCheck("chk-live", true);
+      setStep(2);
+    } catch (e) {
+      setStatus("Camera permission denied", "error");
+    }
+  }
+
+  // ── Capture photo ─────────────────────────────────────────
+  function capturePhoto() {
+    if (!stream) return;
+
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+
+    const img = canvas.toDataURL("image/jpeg", 0.85);
+
+    if (img.length > 3_000_000) {
+      setStatus("Image too large — try again", "error");
+      return;
+    }
+
+    faceImage.value = img;
+    captured = true;
+
+    canvas.style.display = "block";
+    video.style.display  = "none";
+    faceGuide.style.display = "none";
+
+    document.getElementById("captureBtn").style.display = "none";
+    document.getElementById("retakeBtn").style.display  = "inline-block";
+
+    setStatus("Photo captured — ready to verify", "success");
+    setCheck("chk-face",    true);
+    setCheck("chk-capture", true);
+    setStep(3);
+    submitBtn.disabled = false;
+  }
+
+  // ── Retake ────────────────────────────────────────────────
+  function retake() {
+    canvas.style.display    = "none";
+    video.style.display     = "block";
+    faceGuide.style.display = "block";
+    faceImage.value = "";
+    captured = false;
+
+    document.getElementById("retakeBtn").style.display  = "none";
+    document.getElementById("captureBtn").style.display = "inline-block";
+
+    setStatus("Camera active — centre your face", "active");
+    setCheck("chk-face",    false);
+    setCheck("chk-capture", false);
+
+    submitBtn.disabled = true;
+    setStep(2);
+  }
+
+  // ── Stop camera ───────────────────────────────────────────
+  function stopCamera() {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = null;
+    video.srcObject = null;
+    video.style.display     = "none";
+    canvas.style.display    = "none";
+    faceGuide.style.display = "none";
+    placeholder.style.display = "flex";
+
+    document.getElementById("startBtn").style.display   = "inline-block";
+    document.getElementById("captureBtn").style.display = "none";
+    document.getElementById("retakeBtn").style.display  = "none";
+    document.getElementById("stopBtn").style.display    = "none";
+
+    faceImage.value = "";
+    captured = false;
+    submitBtn.disabled = true;
+    setStatus("Camera stopped", "idle");
+    setCheck("chk-live",    false);
+    setCheck("chk-face",    false);
+    setCheck("chk-capture", false);
+    setStep(1);
+  }
+
+  // ── Form submit ───────────────────────────────────────────
+  document.getElementById("loginForm").addEventListener("submit", function(e) {
+    if (!faceImage.value) {
+      e.preventDefault();
+      setStatus("Please capture your face first!", "error");
+      return;
+    }
+    setStatus("Verifying identity…", "active");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Verifying…";
+  });
+
+  // ── Show success card if Django passes verified name ──────
+  // Usage in your view: pass `verified_name` in context on successful match,
+  // then render it as a JS variable so the card appears automatically.
+  {% if verified_name %}
+  (function() {
+    document.getElementById("loginSection").style.display = "none";
+    const card = document.getElementById("successCard");
+    card.style.display = "block";
+    document.getElementById("verifiedName").textContent = "{{ verified_name }}";
+    if (stream) stream.getTracks().forEach(t => t.stop());
+  })();
+  {% endif %}
+
+  window.addEventListener("beforeunload", () => {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+  });
+</script>
+
+{% endblock %}

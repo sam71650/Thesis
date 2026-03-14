@@ -17,9 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from users import views  # Make sure this imports your main() view correctly
+from users.views import LogoutView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.main, name='home'),  # root URL → /
     path('users/', include('users.urls')),  # /users/...
+    path('logout/', LogoutView.as_view(), name='logout'),
 ]

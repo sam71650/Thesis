@@ -10,7 +10,8 @@ from django.contrib.auth import login as auth_login
 
 from .models import Person
 from deepface import DeepFace
-
+from django.contrib.auth import logout
+from django.views import View
 
 # ─────────────────────────────────────────────────────────────
 # HELPER: Decode base64 image → PIL Image
@@ -125,7 +126,7 @@ def find_matching_person(query_embedding: np.ndarray, threshold: float = 0.6):
 # VIEW: Home
 # ─────────────────────────────────────────────────────────────
 def main(request):
-    return render(request, "base.html")
+    return render(request, "home.html")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -252,29 +253,23 @@ def login(request):
 
         # ── Step 6a: Match found → login ──────────────────────
         if matched_person:
-            from django.utils import timezone
-            matched_person.last_verified = timezone.now()
-            matched_person.save(update_fields=["last_verified"])
 
-            if matched_person.user:
-                auth_login(
-                    request,
-                    matched_person.user,
-                    backend="django.contrib.auth.backends.ModelBackend"
-                )
+            user = User.objects.filter(first_name=matched_person.name).first()
+            if user:
+                auth_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
             messages.success(
                 request,
                 f"✅ Welcome back, {matched_person.name}! "
                 f"(Match confidence: {similarity * 100:.1f}%)"
             )
-            return redirect("dashboard")
+            return redirect("home")
 
         # ── Step 6b: No match → access denied ────────────────
         messages.error(
             request,
             f"❌ Face not recognised. Best similarity: {similarity * 100:.1f}% "
-            f"(required ≥ 60%). Please register first or try again."
+            f"(required ≥ 50%). Please register first or try again."
         )
         return render(request, "login.html", {
             "access_denied": True,
@@ -291,3 +286,8 @@ def dashboard(request):
     if not request.user.is_authenticated:
         return redirect("login")
     return render(request, "dashboard.html", {"user": request.user})
+
+class LogoutView(View):
+    def post(self, request):
+        logout(request)
+        return redirect('home')   # change 'home' to your login or home url

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Home · Master Thesis 2026{% endblock %}
+
+{% block extra_css %}
+  .welcome-block {
+    text-align: center;
+    margin-bottom: 4.5rem;
+    animation: fadeUp .7s ease both;
+  }
+  .welcome-tag {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--pink-dark);
+    background: rgba(244,114,182,.14);
+    border: 1px solid rgba(244,114,182,.35);
+    padding: .35rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.4rem;
+  }
+  .welcome-block h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -.03em;
+    color: var(--deep);
+    margin-bottom: 1.2rem;
+  }
+  .welcome-block h1 span {
+    background: var(--grad-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .welcome-block p {
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 520px;
+    margin: 0 auto 2rem;
+    line-height: 1.65;
+  }
+  .welcome-cta { display: inline-flex; gap: .75rem; flex-wrap: wrap; justify-content: center; }
+  .cta-primary {
+    display: inline-block; padding: .75rem 2rem;
+    background: var(--grad-accent); color: #fff;
+    font-family: 'Syne', sans-serif; font-weight: 600; font-size: .95rem;
+    border-radius: 12px; text-decoration: none;
+    box-shadow: 0 6px 20px rgba(168,85,247,.38);
+    transition: filter .2s, transform .2s;
+  }
+  .cta-primary:hover { filter: brightness(1.08); transform: translateY(-2px); }
+  .cta-secondary {
+    display: inline-block; padding: .75rem 2rem;
+    background: var(--surface); color: var(--purple);
+    font-family: 'Syne', sans-serif; font-weight: 600; font-size: .95rem;
+    border-radius: 12px; text-decoration: none;
+    border: 1.5px solid var(--border); backdrop-filter: blur(8px);
+    transition: background .2s, transform .2s;
+  }
+  .cta-secondary:hover { background: rgba(255,255,255,.9); transform: translateY(-2px); }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    animation: fadeUp .7s .15s ease both;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 2rem;
+    backdrop-filter: blur(14px);
+    transition: transform .25s, box-shadow .25s;
+    position: relative; overflow: hidden;
+  }
+  .card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(168,85,247,.12); }
+  .card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--grad-accent); border-radius: 20px 20px 0 0;
+  }
+  .card-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, rgba(244,114,182,.18), rgba(168,85,247,.28));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .card h3 { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--deep); margin-bottom: .5rem; }
+  .card p { font-size: .875rem; color: var(--muted); line-height: 1.6; }
+  .stats {
+    display: flex; gap: 1rem; justify-content: center;
+    flex-wrap: wrap; margin: 3.5rem 0;
+    animation: fadeUp .7s .25s ease both;
+  }
+  .stat-pill {
+    background: var(--surface); border: 1px solid var(--border);
+    backdrop-filter: blur(10px); border-radius: 14px;
+    padding: 1.1rem 2rem; text-align: center; min-width: 130px;
+  }
+  .stat-pill strong {
+    display: block; font-family: 'Syne', sans-serif;
+    font-size: 1.7rem; font-weight: 800;
+    background: var(--grad-accent);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; line-height: 1; margin-bottom: .25rem;
+  }
+  .stat-pill span { font-size: .78rem; color: var(--muted); font-weight: 500; }
+{% endblock %}
+
+{% block content %}
+  <section class="welcome-block">
+    <span class="welcome-tag">Spring 2026 Stockholm University</span>
+    <h1>Welcome to <span>Master Thesis</span><br>2026 Spring</h1>
+    <p>  End-to-End Machine Learning for Adversarial Robustness in Face Recognition Systems with Liveness Detection </p>
+    <div class="welcome-cta">
+      <a href="{% url 'users:register' %}" class="cta-primary">Get Started →</a>
+      <a href="#" class="cta-secondary">Learn More</a>
+    </div>
+  </section>
+
+  <section class="cards">
+    <div class="card">
+      <div class="card-icon">📄</div>
+      <h3>Submit Your Thesis</h3>
+      <p>Upload drafts, receive structured feedback, and track your submission status in real time.asdasasd</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧑‍🏫</div>
+      <h3>Connect with Supervisors</h3>
+      <p>Find and communicate with supervisor Nicolas Harrand directly through the portal — no email chains needed.asdsadasdsad</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📅</div>
+      <h3>Deadlines & Timeline</h3>
+      <p>Stay on top of every milestone with a personalised timeline and automated reminders.asdsadsaddsasad</p>
+    </div>
+  </section>
+
+{% endblock %}
