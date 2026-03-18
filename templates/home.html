@@ -75,6 +75,7 @@
     backdrop-filter: blur(14px);
     transition: transform .25s, box-shadow .25s;
     position: relative; overflow: hidden;
+    text-decoration: none; display: block; color: inherit;
   }
   .card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(168,85,247,.12); }
   .card::before {
@@ -86,35 +87,17 @@
     width: 44px; height: 44px; border-radius: 12px;
     background: linear-gradient(135deg, rgba(244,114,182,.18), rgba(168,85,247,.28));
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem; margin-bottom: 1rem;
+    margin-bottom: 1rem;
   }
   .card h3 { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--deep); margin-bottom: .5rem; }
   .card p { font-size: .875rem; color: var(--muted); line-height: 1.6; }
-  .stats {
-    display: flex; gap: 1rem; justify-content: center;
-    flex-wrap: wrap; margin: 3.5rem 0;
-    animation: fadeUp .7s .25s ease both;
-  }
-  .stat-pill {
-    background: var(--surface); border: 1px solid var(--border);
-    backdrop-filter: blur(10px); border-radius: 14px;
-    padding: 1.1rem 2rem; text-align: center; min-width: 130px;
-  }
-  .stat-pill strong {
-    display: block; font-family: 'Syne', sans-serif;
-    font-size: 1.7rem; font-weight: 800;
-    background: var(--grad-accent);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text; line-height: 1; margin-bottom: .25rem;
-  }
-  .stat-pill span { font-size: .78rem; color: var(--muted); font-weight: 500; }
 {% endblock %}
 
 {% block content %}
   <section class="welcome-block">
     <span class="welcome-tag">Spring 2026 Stockholm University</span>
-    <h1>Welcome to <span>Master Thesis</span><br>2026 Spring</h1>
-    <p>  End-to-End Machine Learning for Adversarial Robustness in Face Recognition Systems with Liveness Detection </p>
+    <h1>Welcome to <span>Master Portal</span><br></h1>
+    <p>End-to-End Machine Learning for Adversarial Robustness in Face Recognition Systems with Liveness Detection</p>
     <div class="welcome-cta">
       <a href="{% url 'users:register' %}" class="cta-primary">Get Started →</a>
       <a href="#" class="cta-secondary">Learn More</a>
@@ -122,21 +105,52 @@
   </section>
 
   <section class="cards">
-    <div class="card">
-      <div class="card-icon">📄</div>
-      <h3>Submit Your Thesis</h3>
-      <p>Upload drafts, receive structured feedback, and track your submission status in real time.asdasasd</p>
-    </div>
-    <div class="card">
-      <div class="card-icon">🧑‍🏫</div>
-      <h3>Connect with Supervisors</h3>
-      <p>Find and communicate with supervisor Nicolas Harrand directly through the portal — no email chains needed.asdsadasdsad</p>
-    </div>
-    <div class="card">
-      <div class="card-icon">📅</div>
+
+    <!-- Card 1: GitHub -->
+    <a class="card" href="https://github.com/sam71650/Thesis" target="_blank">
+      <div class="card-icon">
+        <svg height="22" viewBox="0 0 16 16" width="22" fill="currentColor" style="color:#a855f7">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+          0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+          -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+          .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+          -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27
+          .68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+          .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
+          0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+      </div>
+      <h3>Clone Our Project</h3>
+      <p>Access the full source code on GitHub. Clone the repository and set up the system locally in minutes.</p>
+    </a>
+
+    <!-- Card 2: Contact / Email -->
+    <a class="card" href="mailto:samfarahani071@gmail.com">
+      <div class="card-icon">
+        <svg height="22" viewBox="0 0 24 24" width="22" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <polyline points="2,4 12,13 22,4"/>
+        </svg>
+      </div>
+      <h3>Contact Us</h3>
+      <p>Have a question or need support? Reach out to our team directly by email — we usually respond within 24 hours.</p>
+    </a>
+
+    <!-- Card 3: Deadlines -->
+    <a class="card" href="https://scipro.dsv.su.se" target="_blank">
+      <div class="card-icon">
+        <svg height="22" viewBox="0 0 24 24" width="22" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8"  y1="2" x2="8"  y2="6"/>
+          <line x1="3"  y1="10" x2="21" y2="10"/>
+          <circle cx="12" cy="16" r="1" fill="#a855f7"/>
+        </svg>
+      </div>
       <h3>Deadlines & Timeline</h3>
-      <p>Stay on top of every milestone with a personalised timeline and automated reminders.asdsadsaddsasad</p>
-    </div>
+      <p>Stay on top of every milestone. View the official Stockholm University thesis submission schedule and key dates.</p>
+    </a>
+
   </section>
 
 {% endblock %}

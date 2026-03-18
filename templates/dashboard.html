@@ -1,0 +1,686 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Thesis Portal{% endblock %}
+
+{% block extra_css %}
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+.dash-root {
+  animation: fadeUp .5s ease both;
+}
+
+/* ── PAGE TITLE ── */
+.dash-hero {
+  margin-bottom: 2.5rem;
+}
+
+.dash-hero .greeting {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--deep);
+  line-height: 1.1;
+}
+
+.dash-hero .greeting span {
+  background: var(--grad-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dash-hero .sub {
+  font-size: .9rem;
+  color: var(--muted);
+  margin-top: .4rem;
+}
+
+/* ── GRID ── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* ── CARD BASE ── */
+.d-card {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(168,85,247,.07);
+  overflow: hidden;
+}
+
+/* ── PROFILE CARD (left) ── */
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.2rem 1.8rem 1.8rem;
+  text-align: center;
+  position: relative;
+}
+
+/* decorative top strip */
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(244,114,182,.18), rgba(168,85,247,.18));
+  border-radius: 20px 20px 0 0;
+}
+
+/* ── AVATAR UPLOAD ── */
+.avatar-wrap {
+  position: relative;
+  z-index: 1;
+  margin-top: .5rem;
+}
+
+.avatar-ring {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  padding: 3px;
+  background: var(--grad-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 28px rgba(168,85,247,.3);
+}
+
+.avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #f3e8ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+  color: var(--purple);
+}
+
+.avatar-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.avatar-inner img.loaded { display: block; }
+
+/* camera button over avatar */
+.avatar-edit-btn {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--grad-accent);
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(168,85,247,.35);
+  transition: transform .2s;
+}
+
+.avatar-edit-btn:hover { transform: scale(1.1); }
+.avatar-edit-btn svg { width: 14px; height: 14px; color: #fff; }
+
+#avatarInput { display: none; }
+
+.profile-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--deep);
+  margin-top: 1rem;
+}
+
+.profile-email {
+  font-size: .8rem;
+  color: var(--muted);
+  margin-top: .25rem;
+}
+
+/* joined badge */
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  background: rgba(168,85,247,.1);
+  color: var(--purple);
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 600;
+  padding: .3rem .8rem;
+  margin-top: .9rem;
+}
+
+/* ── STATS ROW ── */
+.profile-stats {
+  display: flex;
+  gap: 0;
+  width: 100%;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.stat-item {
+  flex: 1;
+  padding: 1rem .5rem .8rem;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+
+.stat-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--deep);
+}
+
+.stat-label {
+  font-size: .68rem;
+  color: var(--muted);
+  margin-top: .15rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* ── FORM CARD (right) ── */
+.form-card {
+  padding: 2rem;
+}
+
+.form-card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--deep);
+  margin-bottom: 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.form-card-title .icon-wrap {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(244,114,182,.2), rgba(168,85,247,.2));
+  display: flex; align-items: center; justify-content: center;
+}
+
+.form-card-title svg {
+  width: 16px; height: 16px;
+  color: var(--purple);
+}
+
+/* ── FORM FIELDS ── */
+.field-group {
+  margin-bottom: 1.3rem;
+}
+
+.field-label {
+  display: block;
+  font-size: .74rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: .5rem;
+}
+
+.field-input {
+  width: 100%;
+  padding: .75rem 1rem;
+  background: rgba(255,255,255,0.8);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .92rem;
+  color: var(--deep);
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--pink-dark);
+  box-shadow: 0 0 0 3px rgba(236,72,153,.1);
+}
+
+.field-input:disabled {
+  background: rgba(248,250,252,0.8);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.field-hint {
+  font-size: .72rem;
+  color: var(--muted);
+  margin-top: .35rem;
+}
+
+/* row of two fields */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* ── DIVIDER ── */
+.form-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 1.8rem 0;
+}
+
+/* ── SAVE BUTTON ── */
+.btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .75rem 1.8rem;
+  background: var(--grad-accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Syne', sans-serif;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(168,85,247,.35);
+  transition: filter .2s, transform .2s, box-shadow .2s;
+}
+
+.btn-save:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(168,85,247,.45);
+}
+
+.btn-save:active { transform: translateY(0); }
+
+.btn-save svg { width: 16px; height: 16px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: .85rem 1.4rem;
+  border-radius: 14px;
+  font-size: .875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.12);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all .35s cubic-bezier(.34,1.56,.64,1);
+  z-index: 999;
+  pointer-events: none;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast.success {
+  background: rgba(209,250,229,.95);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.toast.error {
+  background: rgba(254,226,226,.95);
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+/* ── DANGER ZONE ── */
+.danger-zone {
+  margin-top: 1.5rem;
+}
+
+.danger-title {
+  font-size: .74rem;
+  font-weight: 600;
+  color: #e11d48;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: .8rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.btn-danger-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .6rem 1.2rem;
+  background: transparent;
+  border: 1.5px solid rgba(225,29,72,.35);
+  color: #e11d48;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+  text-decoration: none;
+}
+
+.btn-danger-outline:hover {
+  background: rgba(225,29,72,.07);
+  border-color: rgba(225,29,72,.6);
+}
+
+.btn-danger-outline svg { width: 15px; height: 15px; }
+
+@media (max-width: 780px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .field-row  { grid-template-columns: 1fr; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="dash-root">
+
+  <!-- Hero -->
+  <div class="dash-hero">
+    <div class="greeting">
+      Hello, <span>{{ user.first_name|default:user.username }}</span> 👋
+    </div>
+    <div class="sub">Manage your profile and account settings below.</div>
+  </div>
+
+  <!-- Django messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="toast show {{ message.tags }}" id="djangoToast">
+        {% if message.tags == 'success' %}✅{% else %}❌{% endif %}
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="dash-grid">
+
+    <!-- ── LEFT: Profile Card ── -->
+    <div class="d-card profile-card">
+
+      <!-- Avatar -->
+      <div class="avatar-wrap">
+        <div class="avatar-ring">
+          <div class="avatar-inner" id="avatarInner">
+            {% if user.profile.avatar %}
+              <img src="{{ user.profile.avatar.url }}" alt="avatar" class="loaded" id="avatarImg"/>
+            {% else %}
+              <img src="" alt="avatar" id="avatarImg"/>
+              <span id="avatarInitials">
+                {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+        <label class="avatar-edit-btn" for="avatarInput" title="Change photo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </label>
+        <input type="file" id="avatarInput" accept="image/*" onchange="previewAvatar(event)">
+      </div>
+
+      <div class="profile-name" id="sidebarName">
+        {{ user.get_full_name|default:user.username }}
+      </div>
+      <div class="profile-email">{{ user.email|default:"No email set" }}</div>
+
+      <div class="profile-badge">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        Active Member
+      </div>
+
+      <!-- Stats -->
+      <div class="profile-stats">
+        <div class="stat-item">
+          <div class="stat-val">1</div>
+          <div class="stat-label">Thesis</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">{{ user.date_joined|date:"Y" }}</div>
+          <div class="stat-label">Joined</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">✓</div>
+          <div class="stat-label">Verified</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── RIGHT: Edit Form ── -->
+    <div class="d-card form-card">
+
+      <div class="form-card-title">
+        <div class="icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </div>
+        Edit Profile
+      </div>
+
+      <form method="POST" action="{% url 'users:dashboard' %}" enctype="multipart/form-data" id="profileForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_profile">
+
+        <!-- Avatar file (linked to the label above) -->
+        <input type="file" name="avatar" id="avatarFormInput" accept="image/*" style="display:none">
+
+        <!-- Name row -->
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="firstName">First Name</label>
+            <input class="field-input" type="text" id="firstName" name="first_name"
+                   value="{{ user.first_name }}" placeholder="e.g. Sam"
+                   oninput="updateSidebar()">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="lastName">Last Name</label>
+            <input class="field-input" type="text" id="lastName" name="last_name"
+                   value="{{ user.last_name }}" placeholder="e.g. Farahani"
+                   oninput="updateSidebar()">
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="field-group">
+          <label class="field-label" for="email">Email Address</label>
+          <input class="field-input" type="email" id="email" name="email"
+                 value="{{ user.email }}" placeholder="you@example.com">
+          <p class="field-hint">Used for notifications and account recovery.</p>
+        </div>
+
+        <!-- Username (read-only) -->
+        <div class="field-group">
+          <label class="field-label">Username</label>
+          <input class="field-input" type="text" value="{{ user.username }}" disabled>
+          <p class="field-hint">Username is set automatically and cannot be changed.</p>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- Profile photo upload section -->
+        <div class="form-card-title" style="font-size:.95rem; margin-bottom:1rem;">
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </div>
+          Profile Photo
+        </div>
+
+        <div style="display:flex; align-items:center; gap:1.2rem; margin-bottom:1.4rem;">
+          <div class="avatar-ring" style="width:60px;height:60px;flex-shrink:0;">
+            <div class="avatar-inner" style="font-size:1.2rem;" id="avatarPreviewSmall">
+              {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="avatar" class="loaded" id="avatarPreviewImg"/>
+              {% else %}
+                <img src="" alt="avatar" id="avatarPreviewImg"/>
+                <span>{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <div>
+            <label for="avatarUploadBtn" style="
+              display:inline-flex; align-items:center; gap:.5rem;
+              padding:.55rem 1.1rem;
+              background: rgba(168,85,247,.1);
+              color: var(--purple);
+              border: 1.5px solid rgba(168,85,247,.3);
+              border-radius:10px;
+              font-size:.82rem;
+              font-weight:600;
+              cursor:pointer;
+              transition: background .2s;
+            " onmouseover="this.style.background='rgba(168,85,247,.18)'" onmouseout="this.style.background='rgba(168,85,247,.1)'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              Upload Photo
+            </label>
+            <input type="file" id="avatarUploadBtn" name="avatar" accept="image/*" style="display:none" onchange="syncAvatarPreview(event)">
+            <p style="font-size:.72rem;color:var(--muted);margin-top:.4rem;">JPG, PNG or WebP · Max 5 MB</p>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+          <button type="submit" class="btn-save">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Save Changes
+          </button>
+          <span style="font-size:.75rem; color:var(--muted);">Changes are saved immediately.</span>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="form-divider"></div>
+        <div class="danger-zone">
+
+        </div>
+      </form>
+      <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-danger-outline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Log Out
+            </button>
+          </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Live sidebar name update ──────────────────────────────
+  function updateSidebar() {
+    const fn = document.getElementById('firstName').value.trim();
+    const ln = document.getElementById('lastName').value.trim();
+    const full = [fn, ln].filter(Boolean).join(' ') || '{{ user.username }}';
+    document.getElementById('sidebarName').textContent = full;
+
+    const initials = (fn[0]||'') + (ln[0]||'');
+    const el = document.getElementById('avatarInitials');
+    if (el) el.textContent = initials.toUpperCase();
+  }
+
+  // ── Avatar preview from the small camera button ───────────
+  function previewAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    // sync to the real form input
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('avatarUploadBtn').files = dt.files;
+    showAvatarPreview(file);
+  }
+
+  // ── Avatar preview from the form upload button ────────────
+  function syncAvatarPreview(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    showAvatarPreview(file);
+  }
+
+  function showAvatarPreview(file) {
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image must be under 5 MB.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const src = e.target.result;
+      // update large avatar
+      const bigImg = document.getElementById('avatarImg');
+      bigImg.src = src;
+      bigImg.classList.add('loaded');
+      const initials = document.getElementById('avatarInitials');
+      if (initials) initials.style.display = 'none';
+      // update small preview
+      const smallImg = document.getElementById('avatarPreviewImg');
+      if (smallImg) {
+        smallImg.src = src;
+        smallImg.classList.add('loaded');
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── Toast helper ──────────────────────────────────────────
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+    t.className = `toast ${type}`;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // Auto-dismiss django toasts
+  window.addEventListener('DOMContentLoaded', () => {
+    const dt = document.getElementById('djangoToast');
+    if (dt) setTimeout(() => dt.classList.remove('show'), 4000);
+  });
+</script>
+{% endblock %}

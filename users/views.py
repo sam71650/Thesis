@@ -200,7 +200,7 @@ def register(request):
         # ── Step 7: Auto-login ────────────────────────────────
         auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         messages.success(request, f"Welcome, {name}! You are now registered.")
-        return redirect("dashboard")
+        return redirect("users:dashboard")
 
     return render(request, "register.html")
 
@@ -249,7 +249,7 @@ def login(request):
             return render(request, "login.html")
 
         # ── Step 5: Match against database ───────────────────
-        matched_person, similarity = find_matching_person(embedding, threshold=0.6)
+        matched_person, similarity = find_matching_person(embedding, threshold=0.5)
 
         # ── Step 6a: Match found → login ──────────────────────
         if matched_person:
@@ -260,10 +260,9 @@ def login(request):
 
             messages.success(
                 request,
-                f"✅ Welcome back, {matched_person.name}! "
-                f"(Match confidence: {similarity * 100:.1f}%)"
+                f" Welcome back, {matched_person.name}! "
             )
-            return redirect("home")
+            return redirect("users:dashboard")
 
         # ── Step 6b: No match → access denied ────────────────
         messages.error(
