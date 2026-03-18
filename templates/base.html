@@ -47,6 +47,30 @@
       z-index: 0;
     }
 
+    /* ══════════════════════════════════════════
+       PROGRESS BAR
+    ══════════════════════════════════════════ */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      z-index: 9999;
+      background: linear-gradient(90deg, #f472b6, #a855f7, #7c3aed);
+      box-shadow: 0 0 10px rgba(168,85,247,.6), 0 0 20px rgba(244,114,182,.4);
+      transition: width .2s ease, opacity .4s ease;
+      border-radius: 0 2px 2px 0;
+    }
+
+    #progress-bar.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    /* ══════════════════════════════════════════
+       END PROGRESS BAR
+    ══════════════════════════════════════════ */
+
     /* ── NAVBAR ── */
     nav {
       position: sticky;
@@ -85,7 +109,6 @@
     }
     .nav-links a:hover { background: rgba(244,114,182,.13); color: var(--deep); }
 
-    /* right slot */
     .nav-right {
       display: flex;
       align-items: center;
@@ -93,7 +116,7 @@
       gap: .5rem;
     }
 
-    /* ── AUTH BUTTONS (logged out) ── */
+    /* ── AUTH BUTTONS ── */
     .btn-login {
       background: transparent;
       border: 1.5px solid var(--pink-dark);
@@ -120,12 +143,9 @@
     }
     .btn-register:hover { filter: brightness(1.08); }
 
-    /* ── USER DROPDOWN WRAPPER ── */
-    .nav-user-wrap {
-      position: relative;
-    }
+    /* ── USER DROPDOWN ── */
+    .nav-user-wrap { position: relative; }
 
-    /* chip button */
     .nav-user-btn {
       display: flex;
       align-items: center;
@@ -174,7 +194,6 @@
     }
     .nav-user-wrap.open .nav-chevron { transform: rotate(180deg); }
 
-    /* ── DROPDOWN MENU ── */
     .nav-dropdown {
       position: absolute;
       top: calc(100% + 10px);
@@ -198,7 +217,6 @@
       pointer-events: all;
     }
 
-    /* dropdown header (name + email) */
     .dropdown-header {
       padding: .6rem .75rem .5rem;
       border-bottom: 1px solid var(--border);
@@ -216,7 +234,6 @@
       margin-top: .1rem;
     }
 
-    /* dropdown items */
     .dropdown-item {
       display: flex;
       align-items: center;
@@ -235,18 +252,9 @@
       text-align: left;
     }
     .dropdown-item:hover { background: rgba(244,114,182,.1); color: var(--deep); }
+    .dropdown-item svg { width: 16px; height: 16px; color: var(--purple); flex-shrink: 0; }
 
-    .dropdown-item svg {
-      width: 16px; height: 16px;
-      color: var(--purple);
-      flex-shrink: 0;
-    }
-
-    .dropdown-divider {
-      height: 1px;
-      background: var(--border);
-      margin: .35rem 0;
-    }
+    .dropdown-divider { height: 1px; background: var(--border); margin: .35rem 0; }
 
     .dropdown-item.logout { color: #e11d48; }
     .dropdown-item.logout svg { color: #e11d48; }
@@ -260,7 +268,7 @@
       max-width: 1100px;
       width: 100%;
       margin: 0 auto;
-      padding: 5rem 2rem 4rem;
+      padding: 1.5rem 2rem 4rem;
     }
 
     /* ── FOOTER ── */
@@ -304,7 +312,7 @@
     @media (max-width: 640px) {
       nav { padding: 0 1.25rem; grid-template-columns: 1fr auto; }
       .nav-left { display: none; }
-      main { padding: 3rem 1.25rem 3rem; }
+      main { padding: 1.5rem 1.25rem 3rem; }
       footer { padding: 1.5rem 1.25rem; }
     }
 
@@ -312,6 +320,9 @@
   </style>
 </head>
 <body>
+
+  <!-- PROGRESS BAR -->
+  <div id="progress-bar"></div>
 
   <!-- NAVBAR -->
   <nav>
@@ -327,7 +338,6 @@
       {% if user.is_authenticated %}
       <div class="nav-user-wrap" id="userMenu">
 
-        <!-- chip trigger -->
         <div class="nav-user-btn" onclick="toggleMenu()">
           <div class="nav-avatar">
             {% if user.profile.avatar %}
@@ -337,20 +347,18 @@
             {% endif %}
           </div>
           <span class="nav-username">{{ user.get_full_name|default:user.username }}</span>
-          <!-- chevron icon -->
           <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="5 8 10 13 15 8"/>
           </svg>
         </div>
 
-        <!-- dropdown -->
         <div class="nav-dropdown">
           <div class="dropdown-header">
             <div class="d-name">{{ user.get_full_name|default:user.username }}</div>
             <div class="d-email">{{ user.email }}</div>
           </div>
 
-          <a href="{% url 'home' %}" class="dropdown-item">
+          <a href="{% url 'users:dashboard' %}" class="dropdown-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
             </svg>
@@ -399,18 +407,52 @@
     </div>
   </footer>
 
-  <script>
+<script>
+    const bar = document.getElementById('progress-bar');
+    let width = 0;
+    let interval = null;
+    let finished = false;
+
+    function startProgress() {
+      width = 0;
+      bar.style.width = '0%';
+      bar.style.opacity = '1';
+      interval = setInterval(function () {
+        if (width < 90) {
+          const step = (90 - width) * 0.03;
+          width += Math.max(step, 0.2);
+          bar.style.width = width + '%';
+        }
+      }, 50);
+    }
+
+    function finishProgress() {
+      if (finished) return;
+      finished = true;
+      clearInterval(interval);
+      bar.style.transition = 'width 0.3s ease, opacity 0.5s ease';
+      bar.style.width = '100%';
+      setTimeout(function () {
+        bar.style.opacity = '0';
+        setTimeout(function () {
+          bar.style.display = 'none';
+        }, 500);
+      }, 300);
+    }
+
+    startProgress();
+    window.addEventListener('load', finishProgress);
+    setTimeout(finishProgress, 10000);
+
     function toggleMenu() {
       document.getElementById('userMenu').classList.toggle('open');
     }
-    // close when clicking outside
     document.addEventListener('click', function(e) {
       const menu = document.getElementById('userMenu');
       if (menu && !menu.contains(e.target)) {
         menu.classList.remove('open');
       }
     });
-  </script>
-
+</script>
 </body>
 </html>
