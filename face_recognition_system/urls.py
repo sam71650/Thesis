@@ -16,12 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from users import views  # Make sure this imports your main() view correctly
+from django.conf import settings
+from django.conf.urls.static import static
+from users import views
 from users.views import LogoutView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.main, name='home'),  # root URL → /
-    path('users/', include('users.urls')),  # /users/...
+    path('', views.main, name='home'),
+    path('users/', include('users.urls')),
+    path('research/', include('research.urls')),  # ← remove name='research' here
     path('logout/', LogoutView.as_view(), name='logout'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
