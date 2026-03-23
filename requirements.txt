@@ -17,7 +17,6 @@ psycopg2-binary
 requests
 sqlparse
 sympy
-torch
 torchvision
 typing_extensions
 tzdata

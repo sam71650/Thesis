@@ -42,3 +42,11 @@ data/
 
 # OS files
 .DS_Store
+
+# Media / uploads — ignore files but keep folder structure
+media/**
+!media/
+!media/faces/
+!media/faces/.gitkeep
+!media/adversarial/
+!media/adversarial/.gitkeep

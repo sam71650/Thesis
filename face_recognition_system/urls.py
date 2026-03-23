@@ -18,10 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from users import views  # Make sure this imports your main() view correctly
 from users.views import LogoutView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.main, name='home'),  # root URL → /
-    path('users/', include('users.urls')),  # /users/...
+    path('', views.main, name='home'),
+    path('users/', include('users.urls')),
+    path('research/', include('research.urls'), name='research'),
     path('logout/', LogoutView.as_view(), name='logout'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

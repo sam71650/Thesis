@@ -393,6 +393,95 @@
 
 .btn-danger-outline svg { width: 15px; height: 15px; }
 
+/* ── DELETE MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 24px 60px rgba(0,0,0,.2);
+  animation: fadeUp .3s ease both;
+}
+
+.modal-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: rgba(225,29,72,.1);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.modal-icon svg { width: 22px; height: 22px; color: #e11d48; }
+
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: .5rem;
+}
+
+.modal-body {
+  font-size: .875rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: .75rem;
+  justify-content: flex-end;
+}
+
+.btn-cancel {
+  padding: .6rem 1.2rem;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #475569;
+  transition: background .2s;
+}
+
+.btn-cancel:hover { background: #f1f5f9; }
+
+.btn-delete-confirm {
+  padding: .6rem 1.2rem;
+  border-radius: 10px;
+  border: none;
+  background: #e11d48;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(225,29,72,.35);
+  transition: filter .2s, transform .2s;
+}
+
+.btn-delete-confirm:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
 @media (max-width: 780px) {
   .dash-grid { grid-template-columns: 1fr; }
   .field-row  { grid-template-columns: 1fr; }
@@ -430,7 +519,7 @@
         <div class="avatar-ring">
           <div class="avatar-inner" id="avatarInner">
             {% if user.profile.avatar %}
-              <img src="{{ user.profile.avatar.url }}" alt="avatar" class="loaded" id="avatarImg"/>
+              <img src="{{ person.face_image.url }}" alt="avatar" class="loaded" id="avatarImg"/>
             {% else %}
               <img src="" alt="avatar" id="avatarImg"/>
               <span id="avatarInitials">
@@ -590,23 +679,65 @@
 
         <!-- Danger Zone -->
         <div class="form-divider"></div>
-        <div class="danger-zone">
-
-        </div>
+        <div class="danger-zone"></div>
       </form>
-      <form method="POST" action="{% url 'logout' %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn-danger-outline">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
-              Log Out
-            </button>
-          </form>
+
+      <!-- ── LOGOUT + DELETE ACCOUNT BUTTONS ── -->
+      <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
+
+        <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn-danger-outline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Log Out
+          </button>
+        </form>
+
+        <!-- Delete Account — opens confirmation modal -->
+        <button type="button" class="btn-danger-outline" onclick="openDeleteModal()"
+          style="border-color:rgba(225,29,72,.6); background:rgba(225,29,72,.06);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Delete Account
+        </button>
+
+      </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ── DELETE CONFIRMATION MODAL ── -->
+<div class="modal-overlay" id="deleteModal" onclick="handleOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/>
+        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+    </div>
+    <div class="modal-title">Delete Account?</div>
+    <p class="modal-body">
+      This will permanently delete your account and all associated data,
+      including your registered face. This action <strong>cannot be undone</strong>.
+    </p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+      <form method="POST" action="{% url 'users:delete_user' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-delete-confirm">Yes, Delete</button>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -630,7 +761,6 @@
   function previewAvatar(event) {
     const file = event.target.files[0];
     if (!file) return;
-    // sync to the real form input
     const dt = new DataTransfer();
     dt.items.add(file);
     document.getElementById('avatarUploadBtn').files = dt.files;
@@ -652,13 +782,11 @@
     const reader = new FileReader();
     reader.onload = e => {
       const src = e.target.result;
-      // update large avatar
       const bigImg = document.getElementById('avatarImg');
       bigImg.src = src;
       bigImg.classList.add('loaded');
       const initials = document.getElementById('avatarInitials');
       if (initials) initials.style.display = 'none';
-      // update small preview
       const smallImg = document.getElementById('avatarPreviewImg');
       if (smallImg) {
         smallImg.src = src;
@@ -667,6 +795,26 @@
     };
     reader.readAsDataURL(file);
   }
+
+  // ── Delete modal ──────────────────────────────────────────
+  function openDeleteModal() {
+    document.getElementById('deleteModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeDeleteModal();
+  });
 
   // ── Toast helper ──────────────────────────────────────────
   function showToast(msg, type='success') {
