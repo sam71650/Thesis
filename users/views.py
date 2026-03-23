@@ -10,7 +10,7 @@ from django.views import View
 from django.core.files.base import ContentFile
 from .models import Person
 from deepface import DeepFace
-
+import os
 
 # ─────────────────────────────────────────────────────────────
 # HELPER: Decode base64 image → PIL Image
@@ -248,8 +248,21 @@ class LogoutView(View):
 def delete_user(request):
     if request.method == "POST":
         user = request.user
+
+        # ── Delete face image from disk ───────────────────────
+        if user.face_image:
+            if os.path.isfile(user.face_image.path):
+                os.remove(user.face_image.path)
+
+        # ── Delete adversarial image from disk ────────────────
+        adv_path = os.path.join("media", "adversarial", f"adv_{user.username}.jpg")
+        if os.path.isfile(adv_path):
+            os.remove(adv_path)
+
+        # ── Delete user from DB ───────────────────────────────
         logout(request)
-        user.delete()  # Deletes Person + all related data (cascades)
+        user.delete()
+
         messages.success(request, "Your account has been deleted.")
         return redirect("users:main")
 
