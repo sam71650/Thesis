@@ -204,10 +204,10 @@ def register(request):
 
     return render(request, "register.html")
 
-
 # ─────────────────────────────────────────────────────────────
 # VIEW: Login — face-based authentication
 # ─────────────────────────────────────────────────────────────
+
 def login(request):
     """
     Face login flow:
@@ -277,10 +277,10 @@ def login(request):
 
     return render(request, "login.html")
 
-
 # ─────────────────────────────────────────────────────────────
 # VIEW: Dashboard (protected)
 # ─────────────────────────────────────────────────────────────
+
 def dashboard(request):
     if not request.user.is_authenticated:
         return redirect("login")
