@@ -22,6 +22,10 @@ load_dotenv(BASE_DIR / ".env")
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
+# Authentication
+AUTH_USER_MODEL = 'users.Person'
+
 # Create required folders automatically
 os.makedirs(os.path.join(BASE_DIR, 'media', 'faces'), exist_ok=True)
 os.makedirs(os.path.join(BASE_DIR, 'media', 'adversarial'), exist_ok=True)
