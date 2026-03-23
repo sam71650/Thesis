@@ -22,8 +22,6 @@ db.sqlite3
 .git
 .gitignore
 
-# Media / uploads
-media/
 
 # Static build files
 staticfiles/
