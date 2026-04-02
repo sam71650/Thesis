@@ -24,3 +24,5 @@ urllib3
 python-dotenv
 deepface
 tf-keras
+mediapipe
+scikit-image

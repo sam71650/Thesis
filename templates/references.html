@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}References{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background: #f5f7fa;
+        color: #333;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 30px;
+        color: #2c3e50;
+        border-bottom: 3px solid #a855f7;
+        padding-bottom: 10px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    thead {
+        background: linear-gradient(135deg, #7b2ff7, #a855f7);
+        color: white;
+    }
+
+    thead th {
+        padding: 15px 20px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    tbody tr {
+        border-bottom: 1px solid #eef0f3;
+        transition: background 0.2s;
+    }
+
+    tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    tbody tr:hover {
+        background: #f5f0ff;
+    }
+
+    tbody td {
+        padding: 14px 20px;
+        font-size: 0.95rem;
+        vertical-align: top;
+    }
+
+    .ref-number {
+        font-weight: 700;
+        color: #7b2ff7;
+        white-space: nowrap;
+        width: 60px;
+    }
+
+    .ref-description {
+        color: #444;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .ref-link a {
+        color: #7b2ff7;
+        text-decoration: none;
+        word-break: break-all;
+        font-size: 0.85rem;
+    }
+
+    .ref-link a:hover {
+        text-decoration: underline;
+    }
+
+    .no-refs {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-style: italic;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 30px;
+    }
+
+    .pagination a, .pagination span {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        text-decoration: none;
+    }
+
+    .pagination a {
+        background: white;
+        color: #7b2ff7;
+        border: 1px solid #d8b4fe;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        transition: all 0.2s;
+    }
+
+    .pagination a:hover {
+        background: linear-gradient(135deg, #7b2ff7, #a855f7);
+        color: white;
+        border-color: #7b2ff7;
+    }
+
+    .pagination .current {
+        background: linear-gradient(135deg, #7b2ff7, #a855f7);
+        color: white;
+        border: 1px solid #7b2ff7;
+        font-weight: 600;
+    }
+
+    .pagination .disabled {
+        color: #bbb;
+        border: 1px solid #eee;
+        background: #fafafa;
+        cursor: default;
+    }
+</style>
+
+<div class="container">
+    <h1>References</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ref in references %}
+            <tr>
+                <td class="ref-number">[{{ ref.number }}]</td>
+                <td class="ref-description">
+                    {{ ref.description|default:"—" }}
+                </td>
+                <td class="ref-link">
+                    <a href="{{ ref.url }}" target="_blank" rel="noopener noreferrer">
+                        {{ ref.url }}
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="no-refs">No references found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if references.has_previous %}
+            <a href="?page=1">« First</a>
+            <a href="?page={{ references.previous_page_number }}">‹ Prev</a>
+        {% else %}
+            <span class="disabled">« First</span>
+            <span class="disabled">‹ Prev</span>
+        {% endif %}
+
+        <span class="current">
+            Page {{ references.number }} of {{ references.paginator.num_pages }}
+        </span>
+
+        {% if references.has_next %}
+            <a href="?page={{ references.next_page_number }}">Next ›</a>
+            <a href="?page={{ references.paginator.num_pages }}">Last »</a>
+        {% else %}
+            <span class="disabled">Next ›</span>
+            <span class="disabled">Last »</span>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

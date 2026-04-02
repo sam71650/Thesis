@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}FGSM Attack — GhostPixel{% endblock %}
+{% block title %}FGSM Attack{% endblock %}
 
 {% block extra_css %}
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
@@ -445,7 +445,7 @@
       <div class="explainer-step">
         <div class="step-num">Step 01</div>
         <div class="step-text">
-          <strong>Compute the gradient</strong> of the loss J with respect to the input pixels — not the model weights. This tells us how each pixel affects the loss.
+          Compute the gradient of the loss J with respect to the input pixels — not the model weights. This tells us how each pixel affects the loss.
         </div>
         <div class="step-formula">
           <span class="fn">∇</span><span class="kw">ₓ</span>
@@ -456,7 +456,7 @@
       <div class="explainer-step">
         <div class="step-num">Step 02</div>
         <div class="step-text">
-          <strong>Take the sign</strong> of each gradient value — producing a matrix of +1 or −1 per pixel, giving the direction of steepest loss increase.
+          Take the sign of each gradient value — producing a matrix of +1 or −1 per pixel, giving the direction of steepest loss increase.
         </div>
         <div class="step-formula">
           <span class="fn">sign</span><span class="op">(</span>
@@ -468,7 +468,7 @@
       <div class="explainer-step">
         <div class="step-num">Step 03</div>
         <div class="step-text">
-          <strong>Scale by ε</strong> and add to the original image — injecting invisible noise that maximally fools the model while staying imperceptible to humans.
+          Scale by ε and add to the original image — injecting invisible noise that maximally fools the model while staying imperceptible to humans.
         </div>
         <div class="step-formula">
           <span class="var">x</span>
